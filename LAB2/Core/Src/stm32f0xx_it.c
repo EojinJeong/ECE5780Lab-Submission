@@ -60,6 +60,8 @@
 
 /* USER CODE END EV */
 
+volatile uint32_t systick_counter = 0;
+
 /******************************************************************************/
 /*           Cortex-M0 Processor Interruption and Exception Handlers          */
 /******************************************************************************/
@@ -124,13 +126,14 @@ void PendSV_Handler(void)
   */
 void SysTick_Handler(void)
 {
-  /* USER CODE BEGIN SysTick_IRQn 0 */
-
-  /* USER CODE END SysTick_IRQn 0 */
+ 
   HAL_IncTick();
-  /* USER CODE BEGIN SysTick_IRQn 1 */
+   
+	if (systick_counter % 250 == 0) {
+       GPIOC->ODR ^= (1 << 7) ;// Toggle the blue LED (2.1)
+    }
 
-  /* USER CODE END SysTick_IRQn 1 */
+    systick_counter++; //(2.1)
 }
 
 /******************************************************************************/

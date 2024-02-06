@@ -18,6 +18,9 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "stm32f072xb.h"     
+#include "core_cm0.h"// Device header
+
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -60,42 +63,57 @@ void SystemClock_Config(void);
   * @brief  The application entry point.
   * @retval int
   */
+	
+	void EXTI0_1_IRQHandler(void) //Use the handler name to declare the handler function in either main.c or stm32f0xx_it.h. (2.5)
+{
+    
+	GPIOC -> ODR ^= (1 << 8) | (1 << 9) ; //. Toggle both the green and orange LEDs (PC8 & PC9) in the EXTI interrupt handler (2.5)
+	 
+	EXTI -> PR |= 0; //Clear the appropriate flag for input line 0 in the EXTI pending register within the handler. (2.5)
+	
+	
+}
+
+
 int main(void)
 {
-  /* USER CODE BEGIN 1 */
-
-  /* USER CODE END 1 */
-
-  /* MCU Configuration--------------------------------------------------------*/
-
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+ 
   HAL_Init();
-
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
-  /* Configure the system clock */
   SystemClock_Config();
+	
+	RCC->AHBENR |=RCC_AHBENR_GPIOCEN |RCC_AHBENR_GPIOAEN| RCC_APB2ENR_SYSCFGCOMPEN 	; // Clock ENable for every Part.. (2.x)
+	
 
-  /* USER CODE BEGIN SysInit */
+  GPIOC -> MODER |= (1 << 12)| (1 << 14)| (1 << 16) | (1 << 18); //Initialize all of the LED pins in the main function (2.1)
+	
+ GPIOC -> ODR |= (1 << 9); // Set the green LED (PC9) high (we will use this later in the lab) (2.1)
+	
+	
+	GPIOA -> PUPDR |= (1 << 1); // Configure the button pin (PA0) to input-mode at low-speed, with the internal pull-down resistor enabled. (2.2)
+  EXTI -> IMR |= 1;  //Pin PA0 connects to the EXTI input line 0 (EXTI0)  --> he first 16 inputs to the EXTI are for external interrupts; for example, EXTI3 is the 3rd input line which means EXTI0 is 0 input line (2.2)
+	EXTI -> EMR |= 0;  //Enable/unmask interrupt generation on EXTI input line 0 (EXTI0) (2.2)
+	EXTI -> RTSR |= 1; //Configure the EXTI input line 0 to have a rising-edge trigger. (2.2)
+	
+	
+	SYSCFG ->EXTICR[0] |= 0; // Determine which SYSCFG multiplexer can route PA0 to the EXTI peripheral. ITS in fact 0000 (2.3) 
+	
+	
 
-  /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
-  /* USER CODE BEGIN 2 */
-
-  /* USER CODE END 2 */
-
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+ 	NVIC_EnableIRQ( EXTI0_1_IRQn );   //Enable the selected EXTI interrupt by passing its defined name to the NVIC_EnableIRQ()function.  (2.4)
+  
+	NVIC_SetPriority( EXTI0_1_IRQn,1); //Set the priority for the interrupt to 1 (high-priority) with the NVIC_SetPriority() function. (2.4)
+	
+	 
   while (1)
   {
-    /* USER CODE END WHILE */
+   
 
-    /* USER CODE BEGIN 3 */
+		
+		GPIOC -> ODR ^= (1 << 6); // Toggle the red LED (PC6) (2.1)
+		
+		HAL_Delay(500);          //with a moderately-slow delay (400-600ms) in the infinite loop. (2.1)
   }
-  /* USER CODE END 3 */
+ 
 }
 
 /**
