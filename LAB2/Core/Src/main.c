@@ -69,12 +69,12 @@ void SystemClock_Config(void);
     
 	GPIOC -> ODR ^= (1 << 8) | (1 << 9) ; //. Toggle both the green and orange LEDs (PC8 & PC9) in the EXTI interrupt handler (2.5)
 	  
-	//for (volatile uint32_t delay = 0; delay < 1500000; ++delay)
- //   {
+	for (volatile uint32_t delay = 0; delay < 1500000; ++delay)
+    {
         // Add a delay loop of roughly 1-2 seconds to the EXTI interrupt handler (2.6)
-   // }
+    }
 		
-	//  GPIOC->ODR ^= (1 << 8) | (1 << 9); //Add a second LED toggle so that the green and orange LEDs should exchange once before and after the delay loop (2.6)
+	  GPIOC->ODR ^= (1 << 8) | (1 << 9); //Add a second LED toggle so that the green and orange LEDs should exchange once before and after the delay loop (2.6)
 		
 	EXTI -> PR |= 0; //Clear the appropriate flag for input line 0 in the EXTI pending register within the handler. (2.5)
 	
@@ -106,12 +106,12 @@ int main(void)
 	
 	 NVIC_EnableIRQ (EXTI0_1_IRQn);      //<--- (Comment THis for 2.1 with the other codes) Checkout Enable the selected EXTI interrupt by passing its defined name to the NVIC_EnableIRQ() function. (2.4)
 
-   NVIC_SetPriority (EXTI0_1_IRQn, 1); // Set the priority for the interrupt to 1 (high-priority) with the NVIC_SetPriority() function (2.4)
-	 // NVIC_SetPriority (EXTI0_1_IRQn, 3); // Change the EXTI interrupt to have priority 3. (lowest priority) (2.7)
+  // NVIC_SetPriority (EXTI0_1_IRQn, 1); // Set the priority for the interrupt to 1 (high-priority) with the NVIC_SetPriority() function (2.4)
+	 NVIC_SetPriority (EXTI0_1_IRQn, 3); // Change the EXTI interrupt to have priority 3. (lowest priority) (2.7)
 
 	
   	
-	// NVIC_SetPriority (SysTick_IRQn, 2); // Change the SysTick interrupt priority to 2 (medium priority) (2.7)
+	 NVIC_SetPriority (SysTick_IRQn, 2); // Change the SysTick interrupt priority to 2 (medium priority) (2.7)
 	
 	 
   while (1)
