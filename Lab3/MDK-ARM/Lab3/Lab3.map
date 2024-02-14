@@ -926,14 +926,14 @@ Image Symbol Table
     i.SystemClock_Config                     0x08000b10   Section        0  main.o(i.SystemClock_Config)
     i.SystemInit                             0x08000b60   Section        0  system_stm32f0xx.o(i.SystemInit)
     i.TIM2_IRQHandler                        0x08000b64   Section        0  main.o(i.TIM2_IRQHandler)
-    i.__ARM_common_ll_muluu                  0x08000b98   Section        0  stm32f0xx_hal_rcc.o(i.__ARM_common_ll_muluu)
-    i.__NVIC_SetPriority                     0x08000bc8   Section        0  stm32f0xx_hal_cortex.o(i.__NVIC_SetPriority)
-    __NVIC_SetPriority                       0x08000bc9   Thumb Code    60  stm32f0xx_hal_cortex.o(i.__NVIC_SetPriority)
-    i.main                                   0x08000c0c   Section        0  main.o(i.main)
-    .constdata                               0x08000c64   Section       32  stm32f0xx_hal_rcc.o(.constdata)
-    aPLLMULFactorTable                       0x08000c64   Data          16  stm32f0xx_hal_rcc.o(.constdata)
-    aPredivFactorTable                       0x08000c74   Data          16  stm32f0xx_hal_rcc.o(.constdata)
-    .constdata                               0x08000c84   Section       16  system_stm32f0xx.o(.constdata)
+    i.__ARM_common_ll_muluu                  0x08000b80   Section        0  stm32f0xx_hal_rcc.o(i.__ARM_common_ll_muluu)
+    i.__NVIC_SetPriority                     0x08000bb0   Section        0  stm32f0xx_hal_cortex.o(i.__NVIC_SetPriority)
+    __NVIC_SetPriority                       0x08000bb1   Thumb Code    60  stm32f0xx_hal_cortex.o(i.__NVIC_SetPriority)
+    i.main                                   0x08000bf4   Section        0  main.o(i.main)
+    .constdata                               0x08000c9c   Section       32  stm32f0xx_hal_rcc.o(.constdata)
+    aPLLMULFactorTable                       0x08000c9c   Data          16  stm32f0xx_hal_rcc.o(.constdata)
+    aPredivFactorTable                       0x08000cac   Data          16  stm32f0xx_hal_rcc.o(.constdata)
+    .constdata                               0x08000cbc   Section       16  system_stm32f0xx.o(.constdata)
     .data                                    0x20000000   Section       12  stm32f0xx_hal.o(.data)
     .data                                    0x2000000c   Section        4  system_stm32f0xx.o(.data)
     .bss                                     0x20000010   Section       96  libspace.o(.bss)
@@ -1105,12 +1105,12 @@ Image Symbol Table
     SysTick_Handler                          0x08000b09   Thumb Code     8  stm32f0xx_it.o(i.SysTick_Handler)
     SystemClock_Config                       0x08000b11   Thumb Code    80  main.o(i.SystemClock_Config)
     SystemInit                               0x08000b61   Thumb Code     2  system_stm32f0xx.o(i.SystemInit)
-    TIM2_IRQHandler                          0x08000b65   Thumb Code    44  main.o(i.TIM2_IRQHandler)
-    __ARM_common_ll_muluu                    0x08000b99   Thumb Code    48  stm32f0xx_hal_rcc.o(i.__ARM_common_ll_muluu)
-    main                                     0x08000c0d   Thumb Code    72  main.o(i.main)
-    AHBPrescTable                            0x08000c84   Data          16  system_stm32f0xx.o(.constdata)
-    Region$$Table$$Base                      0x08000c94   Number         0  anon$$obj.o(Region$$Table)
-    Region$$Table$$Limit                     0x08000cb4   Number         0  anon$$obj.o(Region$$Table)
+    TIM2_IRQHandler                          0x08000b65   Thumb Code    22  main.o(i.TIM2_IRQHandler)
+    __ARM_common_ll_muluu                    0x08000b81   Thumb Code    48  stm32f0xx_hal_rcc.o(i.__ARM_common_ll_muluu)
+    main                                     0x08000bf5   Thumb Code   142  main.o(i.main)
+    AHBPrescTable                            0x08000cbc   Data          16  system_stm32f0xx.o(.constdata)
+    Region$$Table$$Base                      0x08000ccc   Number         0  anon$$obj.o(Region$$Table)
+    Region$$Table$$Limit                     0x08000cec   Number         0  anon$$obj.o(Region$$Table)
     uwTickFreq                               0x20000000   Data           1  stm32f0xx_hal.o(.data)
     uwTickPrio                               0x20000004   Data           4  stm32f0xx_hal.o(.data)
     uwTick                                   0x20000008   Data           4  stm32f0xx_hal.o(.data)
@@ -1126,9 +1126,9 @@ Memory Map of the image
 
   Image Entry point : 0x080000c1
 
-  Load Region LR_IROM1 (Base: 0x08000000, Size: 0x00000cc4, Max: 0x00020000, ABSOLUTE)
+  Load Region LR_IROM1 (Base: 0x08000000, Size: 0x00000cfc, Max: 0x00020000, ABSOLUTE)
 
-    Execution Region ER_IROM1 (Exec base: 0x08000000, Load base: 0x08000000, Size: 0x00000cb4, Max: 0x00020000, ABSOLUTE)
+    Execution Region ER_IROM1 (Exec base: 0x08000000, Load base: 0x08000000, Size: 0x00000cec, Max: 0x00020000, ABSOLUTE)
 
     Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
 
@@ -1211,21 +1211,21 @@ Memory Map of the image
     0x08000b10   0x08000b10   0x00000050   Code   RO           13    i.SystemClock_Config  main.o
     0x08000b60   0x08000b60   0x00000002   Code   RO         1749    i.SystemInit        system_stm32f0xx.o
     0x08000b62   0x08000b62   0x00000002   PAD
-    0x08000b64   0x08000b64   0x00000034   Code   RO           14    i.TIM2_IRQHandler   main.o
-    0x08000b98   0x08000b98   0x00000030   Code   RO          322    i.__ARM_common_ll_muluu  stm32f0xx_hal_rcc.o
-    0x08000bc8   0x08000bc8   0x00000044   Code   RO         1264    i.__NVIC_SetPriority  stm32f0xx_hal_cortex.o
-    0x08000c0c   0x08000c0c   0x00000058   Code   RO           15    i.main              main.o
-    0x08000c64   0x08000c64   0x00000020   Data   RO          248    .constdata          stm32f0xx_hal_rcc.o
-    0x08000c84   0x08000c84   0x00000010   Data   RO         1750    .constdata          system_stm32f0xx.o
-    0x08000c94   0x08000c94   0x00000020   Data   RO         1967    Region$$Table       anon$$obj.o
+    0x08000b64   0x08000b64   0x0000001c   Code   RO           14    i.TIM2_IRQHandler   main.o
+    0x08000b80   0x08000b80   0x00000030   Code   RO          322    i.__ARM_common_ll_muluu  stm32f0xx_hal_rcc.o
+    0x08000bb0   0x08000bb0   0x00000044   Code   RO         1264    i.__NVIC_SetPriority  stm32f0xx_hal_cortex.o
+    0x08000bf4   0x08000bf4   0x000000a8   Code   RO           15    i.main              main.o
+    0x08000c9c   0x08000c9c   0x00000020   Data   RO          248    .constdata          stm32f0xx_hal_rcc.o
+    0x08000cbc   0x08000cbc   0x00000010   Data   RO         1750    .constdata          system_stm32f0xx.o
+    0x08000ccc   0x08000ccc   0x00000020   Data   RO         1967    Region$$Table       anon$$obj.o
 
 
-    Execution Region RW_IRAM1 (Exec base: 0x20000000, Load base: 0x08000cb4, Size: 0x00000670, Max: 0x00004000, ABSOLUTE)
+    Execution Region RW_IRAM1 (Exec base: 0x20000000, Load base: 0x08000cec, Size: 0x00000670, Max: 0x00004000, ABSOLUTE)
 
     Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
 
-    0x20000000   0x08000cb4   0x0000000c   Data   RW          439    .data               stm32f0xx_hal.o
-    0x2000000c   0x08000cc0   0x00000004   Data   RW         1752    .data               system_stm32f0xx.o
+    0x20000000   0x08000cec   0x0000000c   Data   RW          439    .data               stm32f0xx_hal.o
+    0x2000000c   0x08000cf8   0x00000004   Data   RW         1752    .data               system_stm32f0xx.o
     0x20000010        -       0x00000060   Zero   RW         1838    .bss                c_p.l(libspace.o)
     0x20000070        -       0x00000200   Zero   RW            2    HEAP                startup_stm32f072xb.o
     0x20000270        -       0x00000400   Zero   RW            1    STACK               startup_stm32f072xb.o
@@ -1238,7 +1238,7 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   Object Name
 
-       220         24          0          0          0     425198   main.o
+       276         32          0          0          0     425158   main.o
         56         26        192          0       1536        612   startup_stm32f072xb.o
        128         26          0         12          0       7761   stm32f0xx_hal.o
        124         18          0          0          0       9580   stm32f0xx_hal_cortex.o
@@ -1248,7 +1248,7 @@ Image component sizes
          2          0         16          4          0       1039   system_stm32f0xx.o
 
     ----------------------------------------------------------------------
-      2040        154        272         16       1536     451149   Object Totals
+      2096        162        272         16       1536     451109   Object Totals
          0          0         32          0          0          0   (incl. Generated)
          2          0          0          0          0          0   (incl. Padding)
 
@@ -1300,15 +1300,15 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   
 
-      2980        170        272         16       1632     450873   Grand Totals
-      2980        170        272         16       1632     450873   ELF Image Totals
-      2980        170        272         16          0          0   ROM Totals
+      3036        178        272         16       1632     450877   Grand Totals
+      3036        178        272         16       1632     450877   ELF Image Totals
+      3036        178        272         16          0          0   ROM Totals
 
 ==============================================================================
 
-    Total RO  Size (Code + RO Data)                 3252 (   3.18kB)
+    Total RO  Size (Code + RO Data)                 3308 (   3.23kB)
     Total RW  Size (RW Data + ZI Data)              1648 (   1.61kB)
-    Total ROM Size (Code + RO Data + RW Data)       3268 (   3.19kB)
+    Total ROM Size (Code + RO Data + RW Data)       3324 (   3.25kB)
 
 ==============================================================================
 
