@@ -100,9 +100,10 @@ int main(void)
    EXTI -> IMR |= 1;  //Pin PA0 connects to the EXTI input line 0 (EXTI0)  --> he first 16 inputs to the EXTI are for external interrupts; for example, EXTI3 is the 3rd input line which means EXTI0 is 0 input line (2.2)
    EXTI -> EMR |= 0;  //Enable/unmask interrupt generation on EXTI input line 0 (EXTI0) (2.2)
 	 EXTI -> RTSR |= 1; //Configure the EXTI input line 0 to have a rising-edge trigger. (2.2)
+	 
 	
-	
-	 SYSCFG ->EXTICR[0] |= 0; // Determine which SYSCFG multiplexer can route PA0 to the EXTI peripheral. ITS in fact 0000 (2.3) 
+	 SYSCFG ->EXTICR[0] |= 0; // Det\\\\\\\\\\\\\\\\\\\\
+	the EXTI peripheral. ITS in fact 0000 (2.3) 
 	
 	 NVIC_EnableIRQ (EXTI0_1_IRQn);      //<--- (Comment THis for 2.1 with the other codes) Checkout Enable the selected EXTI interrupt by passing its defined name to the NVIC_EnableIRQ() function. (2.4)
 
