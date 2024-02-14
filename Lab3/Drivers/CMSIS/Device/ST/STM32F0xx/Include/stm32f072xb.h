@@ -10986,7 +10986,7 @@ typedef struct
    ((INSTANCE) == TIM14)   || \
    ((INSTANCE) == TIM15)   || \
    ((INSTANCE) == TIM16)   || \
-   ((INSTANCE) == TIM17))
+   ((INSTANCE) == TIM17)))
 
 #define IS_TIM_CC1_INSTANCE(INSTANCE)\
   (((INSTANCE) == TIM1)    || \
