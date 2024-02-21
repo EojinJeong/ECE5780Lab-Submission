@@ -107,7 +107,7 @@ int main(void)
 	 GPIOC->AFR[0] = 0;
 	 TIM3 ->CR1  = 1;
 	 
-		TIM3->CR2 |= (1 << 4);		
+	 TIM3->CR2 |= (1 << 4);		
  
 	
 	
