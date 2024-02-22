@@ -47,7 +47,7 @@
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
-void processCMD(char letter, char action);
+
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
@@ -63,27 +63,21 @@ void SystemClock_Config(void);
   * @brief  The application entry point.
   * @retval int
   */
-	volatile char receivedData[2];
-volatile int newDataFlag = 0;
-
-void USART3_4_IRQHandler(void) {
+	volatile char receivedData;
+ volatile int newDataFlag = 0;
+	
+	
+	
+	void USART3_IRQHandler(void) {
     // Check if the receive register is not empty
     if (USART3->ISR & USART_ISR_RXNE) {
-        // Save the received character to the array
-        receivedData[newDataFlag] = USART3->RDR;
-        
-        // Check if we have received two characters
-        if (newDataFlag == 1) {
-            newDataFlag = 0;  // Reset the flag for the next reception
-            // Process the received command with two characters
-            processCMD(receivedData[0], receivedData[1]);
-        } else {
-            newDataFlag++;  // Increment the flag for the next reception
-        }
-    }
-}
+        // Save the received character to a global variable
+        receivedData = USART3->RDR;
+        // Set the flag indicating new data
+        newDataFlag = 1;
+    }}
 
-		void singleCharacter(char letter) {
+		void singlecharacter(char letter) {
 	
 	while (!(USART3 -> ISR & USART_ISR_TXE)){}
 		
@@ -98,104 +92,33 @@ void USART3_4_IRQHandler(void) {
 	
 	int i = 0;
 	while(str[i] != '\0') {
-		singleCharacter(str[i]);
+		singlecharacter(str[i]);
 		i++;
 	}
 }
-	void turnOffLED(char color) {
-    switch (color) {
-        case 'r':
-            GPIOC->ODR &= ~(1 << 6); // Turn off the red LED on PC6
-            break;
-        case 'g':
-            GPIOC->ODR &= ~(1 << 9); // Turn off the green LED on PC9
-            break;
-        case 'b':
-            GPIOC->ODR &= ~(1 << 7); // Turn off the blue LED on PC7
-            break;
-        default:
-            // Print an error message for unrecognized color
-            singleString("Error: Unrecognized color '");
-            singleCharacter(color);
-            singleString("'\n");
-            break;
-    }
-}
-
-void turnOnLED(char color) {
-    switch (color) {
-        case 'r':
-            GPIOC->ODR |= (1 << 6); // Turn on the red LED on PC6
-            break;
-        case 'g':
-            GPIOC->ODR |= (1 << 9); // Turn on the green LED on PC9
-            break;
-        case 'b':
-            GPIOC->ODR |= (1 << 7); // Turn on the blue LED on PC7
-            break;
-        default:
-            // Print an error message for unrecognized color
-            singleString("Error: Unrecognized color '");
-            singleCharacter(color);
-            singleString("'\n");
-            break;
-    }
-}
-
-void toggleLED(char color) {
-    switch (color) {
-        case 'r':
-            GPIOC->ODR ^= (1 << 6); // Toggle the red LED on PC6
-            break;
-        case 'g':
-            GPIOC->ODR ^= (1 << 9); // Toggle the green LED on PC9
-            break;
-        case 'b':
-            GPIOC->ODR ^= (1 << 7); // Toggle the blue LED on PC7
-            break;
-        default:
-            // Print an error message for unrecognized color
-            singleString("Error: Unrecognized color '");
-            singleCharacter(color);
-            singleString("'\n");
-            break;
-    }
-}
-void processCMD(char letter, char action) {
+	
+	void toggleLED(char letter) {
     switch (letter) {
         case 'r':
+            GPIOC->ODR ^= (1 << 6);
+            break;
         case 'g':
+            GPIOC->ODR ^= (1 << 9);
+            break;
         case 'b':
-            switch (action) {
-                case '0':
-                    turnOffLED(letter);
-                    break;
-                case '1':
-                    turnOnLED(letter);
-                    break;
-                case '2':
-                    toggleLED(letter);
-                    break;
-                default:
-                    singleString("Error: Unrecognized action '");
-                    singleCharacter(action);
-                    singleString("'\n");
-                    break;
-            }
+            GPIOC->ODR ^= (1 << 7);
             break;
         default:
+            // Print an error message for unrecognized command
             singleString("Error: Unrecognized command '");
-            singleCharacter(letter);
+            singlecharacter(letter);
             singleString("'\n");
-            break;
     }
 }
 		
-
-	void printCommandPrompt() {
-   singleString("CMD?");
-		singleString("\n");
-}
+		
+		
+		
 		
 	
 	
@@ -215,12 +138,10 @@ int main(void)
 	GPIOB -> MODER |= (1 << 21 ); // PINS PC4 AND PC5
 	GPIOB -> MODER |= (1 << 23 ); 
 	GPIOB->AFR[1]|= (1 << 10 )|(1 << 14) ; //AF1 on PC4 and PC5
-
-  NVIC_EnableIRQ(USART3_4_IRQn );
+	//NVIC_SetPriority(USART3_4_IRQn , 0);
+  //NVIC_EnableIRQ(USART3_4_IRQn );
 	
-	NVIC_SetPriority(USART3_4_IRQn , 1);
-	
-	char* testArray = "Jin Jeong Who Made This";
+	char* testArray = "JinJeong Who Made This";
 
 	
 	
@@ -228,22 +149,21 @@ int main(void)
 	//uint32_t  system_clock = HAL_RCC_GetHCLKFreq();
 	//uint32_t  USART_div = (system_clock/baud_rate);
 	USART3 ->BRR = 69;
-	USART3 -> CR1 |= (1 << 0) | (1 << 2) | (1 << 3) | (1 << 5); //in the USART initialization, enable the receive register not empty interrupt
+	USART3 -> CR1 |= (1 << 0) | (1 << 2) | (1 << 3) ;//| (1 << 5); //in the USART initialization, enable the receive register not empty interrupt
  
- char action = '0'; // Initialize with a default action or compute dynamically
+  while (1)
+  {
+  // singlecharacter('J');
+	//	singleString(testArray);
+		
+		while (!(USART3->ISR & USART_ISR_RXNE)) {}
 
- while (1) {
-        printCommandPrompt();
+        // Read the received character
+        char receivedChar = USART3->RDR;
 
-        // Wait for two characters to be received
-        while (newDataFlag != 2) {}
-
-        // Process the received data
-        processCMD(receivedData[0], receivedData[1]);
-
-        // Clear the flag for the next reception
-        newDataFlag = 0;
-    }
+        // Toggle the appropriate LED based on the received character
+        toggleLED(receivedChar);
+  }
 
 }
 
