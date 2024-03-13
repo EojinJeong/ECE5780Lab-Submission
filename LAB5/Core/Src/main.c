@@ -65,21 +65,85 @@ void SystemClock_Config(void);
 int main(void)
 {
  
- RCC->AHBENR |=RCC_AHBENR_GPIOBEN|RCC_AHBENR_GPIOCEN;
- RCC->APB1ENR |= RCC_I2C1CLKSOURCE_SYSCLK;
+  RCC->AHBENR |=RCC_AHBENR_GPIOBEN|RCC_AHBENR_GPIOCEN; // Enable GPIOB and GPIOC in the RCC
+  RCC->APB1ENR |= RCC_APB1ENR_I2C2EN; // Enable the I2C2 peripheral in the RCC.
 	
+	GPIOB -> MODER  |= (1 << 27 ) |(1 << 23 ) | ( 1 << 28) ;  
+	GPIOB -> OTYPER |= (1 << 13 )| (1 << 11) ;
+	GPIOB->AFR[1]   |= (1 << 12 ) | (1 << 14) | ( 1 << 22) | ( 1 << 20); 
+	GPIOB -> BSRR   |= ( 1 << 14 );
 	
+	GPIOC -> MODER  |= ( 1 << 0 ) | (1 << 14);
+	GPIOC -> BSRR   |= (1);
+
+  I2C2->TIMINGR |= (1 << 28) | (1 << 0) | (1 << 1) | (1 << 4) | (1 << 8) | (1 << 9) | (1 << 10) | (1 << 11) | (1 << 17) | (1 << 22);
+  I2C2 -> CR1    |= (1 << 0) ;
 	
-	GPIOB -> MODER |= (1 << 21 ) |(1 << 23 ); ; 
-	GPIOB -> OTYPER |=  (1 << 10 ) | (1 << 11) ;
-	GPIOB->AFR[1]|= (1 << 10 )|(1 << 14) ; 
+	    // Set Transaction Parameters in CR2 Register
+    I2C2->CR2 |= (0x69 << I2C_CR2_SADD_Pos); // Set slave address
+    I2C2->CR2 |= (1 << I2C_CR2_NBYTES_Pos);  // Set number of bytes to transmit
+    I2C2->CR2 &= ~(I2C_CR2_RD_WRN);          // Set as write operation
+    I2C2->CR2 |= (I2C_CR2_START);            // Start condition
+
+   
+	 
+
+
+	 // Wait for TXIS or NACKF Flags
+    while (!((I2C2->ISR & I2C_ISR_TXIS) || (I2C2->ISR & I2C_ISR_NACKF))) {
+        
+			if(I2C2 -> ISR & I2C_ISR_TXIS) {
+				GPIOC -> ODR |= 1 << 7;
+				break;
+			} 
+				
+			
+			
+			
+		 if (I2C2->ISR & I2C_ISR_NACKF) {
+            // Handle NACK error
+            break;
+        }
+    }
+
 	
-	I2C1->TIMINGR |= (1 << 28) | (1 << 0) | (1 << 1) | (1 << 4) | (1 << 8) | (1 << 9) | (1 << 10) | (1 << 11) | (1 << 17) | (1 << 22);
-  I2C1 -> CR1 |= (1 << 0);
+    // Write the Address of the "WHO_AM_I" Register
+    I2C2->TXDR = 0x0F;
+
+    // Wait for Transfer Complete Flag
+    while (!(I2C2->ISR & I2C_ISR_TC)); // Wait until transfer complete
+
+    // Reload CR2 Register for Read Operation
+    I2C2->CR2 |= (0x69 << I2C_CR2_SADD_Pos); // Set slave address
+    I2C2->CR2 |= (1 << I2C_CR2_NBYTES_Pos);  // Set number of bytes to receive
+    I2C2->CR2 |= (I2C_CR2_RD_WRN);           // Set as read operation
+    I2C2->CR2 |= (I2C_CR2_START);            // Start condition
+
+    // Wait for RXNE or NACKF Flags
+    while (!((I2C2->ISR & I2C_ISR_RXNE) || (I2C2->ISR & I2C_ISR_NACKF))) {
+        if (I2C2->ISR & I2C_ISR_NACKF) {
+            // Handle NACK error
+            break;
+        }
+    }
+
+    // Wait for Transfer Complete Flag
+    while (!(I2C2->ISR & I2C_ISR_TC)); // Wait until transfer complete
+
+    // Check Contents of RXDR Register
+    uint8_t received_data = I2C2->RXDR;
+    if (received_data == 0xD4) {
+        // WHO_AM_I register matches expected value
+        // Set LED pattern or print USART message
+    } else {
+        // WHO_AM_I register does not match expected value
+        // Handle failure
+    }
+
+    // Set STOP Bit in CR2 Register
+    I2C2->CR2 |= I2C_CR2_STOP; // Stop condition
 	
-	I2C1 -> CR2 |= ~((0x7F << 16) | (0x3FF << 0));
-	I2C1 -> CR2 |=
-	
+while(1) {}
 	
 }
 
