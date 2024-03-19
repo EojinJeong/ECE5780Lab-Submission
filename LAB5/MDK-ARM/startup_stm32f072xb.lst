@@ -394,11 +394,12 @@ ork --depend=lab5\startup_stm32f072xb.d -olab5\startup_stm32f072xb.o -I.\RTE\_L
 ARM Macro Assembler    Page 7 
 
 
-AB5 -IC:\Keil\Packs\ARM\CMSIS\6.0.0\CMSIS\Core\Include -IC:\Keil\Packs\Keil\STM
-32F0xx_DFP\2.1.1\Drivers\CMSIS\Device\ST\STM32F0xx\Include --predefine="__EVAL 
-SETA 1" --predefine="__UVISION_VERSION SETA 536" --predefine="_RTE_ SETA 1" --p
-redefine="STM32F072xB SETA 1" --predefine="_RTE_ SETA 1" --list=startup_stm32f0
-72xb.lst startup_stm32f072xb.s
+AB5 -IC:\Users\djwls\AppData\Local\Arm\Packs\ARM\CMSIS\5.9.0\CMSIS\Core\Include
+ -IC:\Users\djwls\AppData\Local\Arm\Packs\Keil\STM32F0xx_DFP\2.1.1\Drivers\CMSI
+S\Device\ST\STM32F0xx\Include --predefine="__EVAL SETA 1" --predefine="__UVISIO
+N_VERSION SETA 539" --predefine="_RTE_ SETA 1" --predefine="STM32F072xB SETA 1"
+ --predefine="_RTE_ SETA 1" --list=startup_stm32f072xb.lst startup_stm32f072xb.
+s
 
 
 
