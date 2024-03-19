@@ -1,70 +1,166 @@
-/* USER CODE BEGIN Header */
-/**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2024 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
-/* USER CODE END Header */
-/* Includes ------------------------------------------------------------------*/
+
 #include "main.h"
 
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
 
-/* USER CODE END Includes */
-
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+int16_t yVal, xVal;
+//Function for setting up the CTRL_REG1 , From Fig 5.7, for set THE write -> put the register -> write data to selected register. So no TC Flag Check until the actual End.
 
 
-/* USER CODE BEGIN PFP */
+void gyroStart(void) {		
 
-/* USER CODE END PFP */
+	
+		  // Set the slave address
+    I2C2->CR2 |= (0x69 << 1);
+    // Set the number of bytes to transmit
+    I2C2->CR2 &= ~(0xFF << 16);
+    I2C2->CR2 |= (1 << 17);
+    // Set the RD_WRN bit to indicate a write operation (default behavior)
+    I2C2->CR2 &= ~(1 << 10);
+    // Set the START bit to begin the a	
+		I2C2 -> CR2 |= I2C_CR2_START;
+	  //Wait until either of the TXIS (Transmit Register Empty/Ready) or NACKF (Slave Not-Acknowledge) flags are set
+		while (1) {
+			if(I2C2->ISR & (I2C_ISR_TXIS)) {
+				break;
+																		 }
+		//If the NACKF flag is set, the slave did not respond to the address frame. You may have a wiring or configuration error.
+			if(I2C2->ISR & I2C_ISR_NACKF)  { 
+				while (1){GPIOC->BSRR |= (1 << 6);} //red on On Error
+																	   }
+	
+							}
+			
+		//Write the address of the CTRL_REG1 register into the I2C transmit register (TXDR) Address: 0x20
+		I2C2->TXDR |= 0x20;
+		//Wait until either of the TXIS (Transmit Register Empty/Ready) or NACKF (Slave Not-Acknowledge) flags are set	
+		while (1) {
+			if(I2C2->ISR & (I2C_ISR_TXIS)) {
+				break;
+																		 }
+		//If the NACKF flag is set, the slave did not respond to the address frame. You may have a wiring or configuration error.
+			if(I2C2->ISR & I2C_ISR_NACKF)  { 
+				while (1){GPIOC->BSRR |= (1 << 6);}
+																	   }
+	
+							}
+			
+		// put it on Power-Down Mode + X En + Y En which is 1011 in Hex = 0x0B middle Zero is Z-axis					
+		I2C2->TXDR |= 0x0B; 
+							
+							
+		// Wait until the TC (Transfer Complete) flag is set
+		while (1) {
+			if(I2C2->ISR & (I2C_ISR_TC)) {break;}
+							}
+		//Set the STOP bit in the CR2 register to release the I2C bus. check the bits 1 << 14 initally 
+			I2C2 -> CR2 |= (1 << 14);
 
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
+		while (I2C2 -> CR2 & (1 << 14)) {
+																		
+																		}
+		//Set the STOP bit in the CR2 register to release the I2C bus. 
+			I2C2 -> CR2 &= ~ (1 << 14);
+							
+	}
 
-/* USER CODE END 0 */
+	void performI2CTransaction(uint8_t txData, uint8_t slaveAddress, int16_t *receivedData) {
+		receivedData = 0;
+		
+    // Set the slave address
+    I2C2->CR2 |= (slaveAddress << 1);
+    // Set the number of bytes to transmit
+    I2C2->CR2 &= ~(0xFF << 16);
+    I2C2->CR2 |= (1 << 16);
+    // Set the RD_WRN bit to indicate a write operation (default behavior)
+    I2C2->CR2 &= ~(1 << 10);
+    // Set the START bit to begin the address frame
+    I2C2->CR2 |= I2C_CR2_START;
 
-/**
-  * @brief  The application entry point.
-  * @retval int
-  */
+    // Wait until either TXIS or NACKF flags are set
+    while (1) {
+        if (I2C2->ISR & (I2C_ISR_TXIS)) {
+            break;
+        }
+        // If NACKF flag is set, there might be a wiring or configuration error
+        if (I2C2->ISR & I2C_ISR_NACKF) {
+            while (1) {
+                GPIOC->BSRR |= (1 << 6); // Red on error
+            }
+        }
+    }
+
+    // Transmit register address
+    I2C2->TXDR = txData;
+		
+			// Wait until the TC (Transfer Complete) flag is set
+		while (1) {
+			if(I2C2->ISR & (I2C_ISR_TC)) {break;}
+							}	
+	
+		
+
+    // Set the slave address
+    I2C2->CR2 |= (slaveAddress << 1);
+    // Set the number of bytes to transmit
+    I2C2->CR2 &= ~(0xFF << 16);
+    I2C2->CR2 |= (1 << 17);
+    // Set the RD_WRN bit to indicate a read operation
+    I2C2->CR2 |= (1 << 10);
+    // Set the START bit to begin the address frame
+    I2C2->CR2 |= I2C_CR2_START;
+
+    // Wait until either RXNE or NACKF flags are set
+    while (1) {
+        if (I2C2->ISR & (I2C_ISR_RXNE)) {
+            break;
+        }
+        if (I2C2->ISR & I2C_ISR_NACKF) {
+            while (1) {
+                GPIOC->BSRR |= (1 << 6); // Red on error
+            }
+        }
+    }
+
+    // Receive data
+    *receivedData |= I2C2->RXDR;
+		
+		    while (1) {
+        if (I2C2->ISR & (I2C_ISR_RXNE)) {
+            break;
+        }
+        if (I2C2->ISR & I2C_ISR_NACKF) {
+            while (1) {
+                GPIOC->BSRR |= (1 << 6); // Red on error
+            }
+        }
+    } 
+
+    // Receive data
+    *receivedData |= (I2C2->RXDR << 8);
+
+    // Wait until transfer complete
+    while (!(I2C2->ISR & (I2C_ISR_TC))) {}
+
+    // Set the STOP bit in the CR2 register to release the I2C bus
+    I2C2->CR2 |= (1 << 14);
+
+    // Wait until STOP bit is cleared
+    while (I2C2->CR2 & (1 << 14)) {}
+			
+		// Set the STOP bit in the CR2 register to release the I2C bus
+    I2C2->CR2 &= ~(1 << 14);
+}
+
+	
+
 int main(void)
 {
-		RCC -> AHBENR |= RCC_AHBENR_GPIOBEN | RCC_AHBENR_GPIOCEN; //Enable GPIOB and GPIOC in the RCC
+	
+	  HAL_Init();
+    SystemClock_Config();
+	  //Enable GPIOB and GPIOC in the RCC
+		RCC -> AHBENR |= RCC_AHBENR_GPIOBEN | RCC_AHBENR_GPIOCEN; 
 		//Set PB11 to alternate function mode, open-drain output type, and select I2C2_SDA as its alternate function
 		//Set PB13 to alternate function mode, open-drain output type, and select I2C2_SCL as its alternate function
 		//Set PB14 to output mode, push-pull output type, and initialize/set the pin high.
@@ -75,7 +171,8 @@ int main(void)
 		GPIOB -> PUPDR |= (1 << 22) | (1 << 26);
 		GPIOB -> AFR[1] |= (1 << 12) | (1 << 22) | (1 << 20); 
 		GPIOB -> ODR |= (1 << 14);
-		GPIOC -> MODER |= (1 << 0); 
+		GPIOC -> MODER |= (1 << 0);
+  
 		GPIOC -> ODR |= (1 << 0);
 		GPIOC -> MODER |= (1 << 12) | (1 << 14) | (1 << 16) | (1 << 18);
 	 
@@ -89,79 +186,120 @@ int main(void)
 		I2C2 -> CR1 |= (1 << 0); 
 	
 	
-	
-		//Set the L3GD20 slave address = 0x69
-		I2C2 -> CR2 |= (0x69 << 1);
-		//Set the number of bytes to transmit = 1.
-		I2C2 -> CR2 &= ~(0xFF << 16);
-		I2C2 -> CR2 |= (1 << 16);
-		//Set the RD_WRN bit to indicate a write operation. by defalut
-		I2C2 -> CR2 &= ~(1 << 10);
-		//Set the START bit.
-		I2C2 -> CR2 |= I2C_CR2_START;
-	
+//	------------------------------------------------5.1--------------------------------------------------------
+//		//Set the L3GD20 slave address = 0x69
+//		I2C2 -> CR2 |= (0x69 << 1);
+//		//Set the number of bytes to transmit = 1.
+//		I2C2 -> CR2 &= ~(0xFF << 16);
+//		I2C2 -> CR2 |= (1 << 16);
+//		//Set the RD_WRN bit to indicate a write operation. by defalut
+//		I2C2 -> CR2 &= ~(1 << 10);
+//		//Set the START bit.
+//		I2C2 -> CR2 |= I2C_CR2_START;
+//	
+//  
+//	
+//    //Wait until either of the TXIS (Transmit Register Empty/Ready) or NACKF (Slave Not-Acknowledge) flags are set.
+//		while (1) {
+//			if(I2C2->ISR & (I2C_ISR_TXIS)) {
+//				break;
+//																		 }
+//		//If the NACKF flag is set, the slave did not respond to the address frame. You may have a wiring or configuration error.
+//			if(I2C2->ISR & I2C_ISR_NACKF)  { 
+//				while (1){GPIOC->BSRR |= (1 << 6);}
+//																	   }
+//	
+//							}
+//    //Continue if the TXIS flag is set.
+
+//							
+//							
+//		//Write the address of the "WHO_AM_I" register into the I2C transmit register (TXDR)
+//		I2C2->TXDR |= 0x0F;
+
+//							
+//							
+//    //Wait until the TC (Transfer Complete) flag is set.
+//		while (1) {
+//			if(I2C2->ISR & (I2C_ISR_TC)) {break;}
+//							}
+//    //Reload the CR2 register with the same parameters as before
+//		I2C2 -> CR2 |= (0x69 << 1);
+//		I2C2 -> CR2 &= ~(0xFF << 16);
+//		I2C2 -> CR2 |= (1 << 16);
+//		//but set the RD_WRN bit toindicate a read operation. 
+//		I2C2 -> CR2 |= (1 << 10);
+//		//Set the START bit to begin the address frame
+//		I2C2->CR2 |= I2C_CR2_START;
+
+
+//		//Wait until either of the RXNE (Receive Register Not Empty) or NACKF (Slave Not-Acknowledge) flags are set
+//		while (1) {
+//			if(I2C2->ISR & (I2C_ISR_RXNE)) {break;}
+
+//			if(I2C2->ISR & I2C_ISR_NACKF) { 
+//				while (1){GPIOC->BSRR |= (1 << 6);}
+//																		}
+//	
+//							}
+//		int32_t data = I2C2 -> RXDR;
+//		//Check the contents of the RXDR register to see if it matches 0xD3. (expected value of the WHO_AM_I”  register)
+//		if(data ==0xD3) {
+//			GPIOC -> BSRR |= 1 << 7;
+//										}
+//		// Wait until the TC (Transfer Complete) flag is set
+//		while (1) {
+//								if(I2C2->ISR & (I2C_ISR_TC)) {break;}
+//							}
+//		//Set the STOP bit in the CR2 register to release the I2C bus. 
+//		I2C2 -> CR2 |= 1 << 14;
+
+//		while (I2C2 -> CR2 & (1 << 14)) {
+//																		
+//																		}
+//		//Set the STOP bit in the CR2 register to release the I2C bus. 
+//		I2C2 -> CR2 &= ~ ( 1 << 14);
+
+// ------------------------------------------------5.2--------------------------------------------------------
+       gyroStart(); // Setting up the control register
+			 xVal =0; //Inital Value
+			 yVal=0;
+			 
+			 while(1) {
+		
   
-	
-    //Wait until either of the TXIS (Transmit Register Empty/Ready) or NACKF (Slave Not-Acknowledge) flags are set.
-		while (1) {
-			if(I2C2->ISR & (I2C_ISR_TXIS)) {
-				break;
-																		 }
-		//If the NACKF flag is set, the slave did not respond to the address frame. You may have a wiring or configuration error.
-			if(I2C2->ISR & I2C_ISR_NACKF)  { 
-				while (1){GPIOC->BSRR |= (1 << 6);}
-																	   }
-	
-							}
-    //Continue if the TXIS flag is set.
+    // Perform I2C transaction for X value
+    performI2CTransaction(0xA8, 0x69, &xVal);
 
-							
-							
-		//Write the address of the "WHO_AM_I" register into the I2C transmit register (TXDR)
-		I2C2->TXDR |= 0x0F;
+    // Perform I2C transaction for Y value
+    performI2CTransaction(0xAA, 0x69, &yVal);
+		
+		
+		// Control LEDs based on xVal and yVal
+		if (xVal > 5000) {
+    // Turn on LED1 (PC9) and turn off others
+    GPIOC->BSRR = (1 << 9);
+    GPIOC->BSRR = ((1 << 8) | (1 << 7) | (1 << 6)) << 16;
+		} else if (xVal < -5000) {
+    // Turn on LED2 (PC8) and turn off others
+    GPIOC->BSRR = (1 << 8);
+    GPIOC->BSRR = ((1 << 9) | (1 << 7) | (1 << 6)) << 16;
+		} else if (yVal > 5000) {
+    // Turn on LED3 (PC7) and turn off others
+    GPIOC->BSRR = (1 << 7);
+    GPIOC->BSRR = ((1 << 9) | (1 << 8) | (1 << 6)) << 16;
+		} else if (yVal < -5000) {
+    // Turn on LED4 (PC6) and turn off others
+    GPIOC->BSRR = (1 << 6);
+    GPIOC->BSRR = ((1 << 9) | (1 << 8) | (1 << 7)) << 16;
+		} else {
+    // Turn off all LEDs
+    GPIOC->BSRR = ((1 << 9) | (1 << 8) | (1 << 7) | (1 << 6)) << 16;
+						}
 
-							
-							
-    //Wait until the TC (Transfer Complete) flag is set.
-		while (1) {
-			if(I2C2->ISR & (I2C_ISR_TC)) {break;}
-							}
-    //Reload the CR2 register with the same parameters as before
-		I2C2 -> CR2 |= (0x69 << 1);
-		I2C2 -> CR2 &= ~(0xFF << 16);
-		I2C2 -> CR2 |= (1 << 16);
-		//but set the RD_WRN bit toindicate a read operation. 
-		I2C2 -> CR2 |= (1 << 10);
-		//Set the START bit to begin the address frame
-		I2C2->CR2 |= I2C_CR2_START;
-
-
-		//Wait until either of the RXNE (Receive Register Not Empty) or NACKF (Slave Not-Acknowledge) flags are set
-		while (1) {
-			if(I2C2->ISR & (I2C_ISR_RXNE)) {break;}
-
-			if(I2C2->ISR & I2C_ISR_NACKF) { 
-				while (1){GPIOC->BSRR |= (1 << 6);}
-																		}
-	
-							}
-		int32_t data = I2C2 -> RXDR;
-		//Check the contents of the RXDR register to see if it matches 0xD3. (expected value of the WHO_AM_I”  register)
-		if(data ==0xD3) {
-			GPIOC -> BSRR |= 1 << 7;
-										}
-		// Wait until the TC (Transfer Complete) flag is set
-		while (1) {
-								if(I2C2->ISR & (I2C_ISR_TC)) {break;}
-							}
-		//Set the STOP bit in the CR2 register to release the I2C bus. 
-		I2C2 -> CR2 |= 1 << 14;
-
-		while (I2C2 -> CR2 & (1 << 14)) {
-																		
-																		}
-		//Set the STOP bit in the CR2 register to release the I2C bus. 
-		I2C2 -> CR2 &= ~ ( 1 << 14);
+			 
+              }
+			 
 }
 
 
